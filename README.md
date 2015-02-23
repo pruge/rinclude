@@ -11,21 +11,25 @@ npm install rinclude
 usage
 ```
 // path() execute only one, next run ignored.
-// find folder ('my_modules','lib') from project root folder
+// find folder ('./a/b/c') from project root folder
 // and search package file within it's sub folder.
 
-// server.js
-var rinclude = require('rinclude').path('my_modules','lib');
-var config = rinclude('config');
+// folder tree
+/ root
+  | - server.js
+  | - lib
+       | - router
+       |    - index.js
+       | - config
+            = index.js
 
 
-// router.js
+// /server.js
+var rinclude = require('rinclude').path('./');
+var config   = rinclude('config');
+
+
+// /lib/router/index.js
 var rinclude = require('rinclude');
-var config = rinclude('config');
-```
-
-custom module
-```
-It need to create 'package.json' like npm
-'package.json' must have 'name', 'main' property
+var config   = rinclude('config');
 ```
