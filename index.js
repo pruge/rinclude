@@ -3,39 +3,79 @@ var nodePath    = require('path'),
     _           = require('lodash'),
     fs          = require('fs-extended'),
 
-    scanResult  = [],
-    root        = nodePath.resolve(__dirname, '../../'),
-    base,
-    relative;
+    scanResult  = {},
+    libs        = [],
+    folders     = [],
+    root        = nodePath.resolve(__dirname, '../../');
 
 function include ( lib ) {
-  if (!_.include( scanResult, lib )) {
-    throw new Error('[' + lib + '] module not found in path [ ' + relative + ' ]')
+  var path = scanResult[lib];
+
+  console.log(scanResult);
+
+  if ( _.isUndefined(path) ) {
+    throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
   }
 
-  return require( nodePath.resolve(base, lib) );
+  return require( path );
 }
 
-include.path = function path ( path ) {
-  relative = path;
-  base = nodePath.resolve( root, path );
+include.path = function path ( folder, options ) {
+  var self = this;
 
-  // console.log( base );
+  // option.divider = folder or file, default is folder
+  if ( !_.isObject(options) ) {
+    options = {prefix: options, divider: 'folder'};
+  } else {
+    options.divider = options.divider || 'folder';
+  }
 
-  this.scan( base );
+  // folders = Array.prototype.slice.call(arguments);
+  // folders.forEach(function (folder) {
+  folders.push( folder );
+    self.scan( folder, options );
+  // });
+
   return this;
 };
 
 
-include.scan = function scan( base ) {
+include.scan = function scan( folder, options ) {
+  var base = nodePath.resolve( root, folder );
   function filter (itemPath, stat) {
-    return stat.isDirectory();
+    if (options.divider === 'file') {
+      return stat.isFile();
+    } else {
+      // console.log(stat);
+      return stat.isDirectory();
+    }
   }
-  var options = {
+  var fsOptions = {
     recursive: 0,
     filter: filter
   };
-  scanResult = fs.listAllSync( base, options );
+
+  this.checkDuplicate( libs, fs.listAllSync( base, fsOptions ), base, options );
+};
+
+include.checkDuplicate = function checkDuplicate ( prevLibs, nowLibs, base, options ) {
+  nowLibs.forEach(function (lib) {
+    var key  = ( options.prefix !== undefined ) ? options.prefix+'.'+lib : lib;
+    if ( _.includes( prevLibs, key) ) {
+      throw new Error('[' + key + '] module is duplicate. check it.');
+    }
+  });
+
+  this.generate( nowLibs, base, options );
+  libs = prevLibs.concat( nowLibs );
+};
+
+include.generate = function generate ( nowLibs, base, options ) {
+  nowLibs.forEach(function (lib) {
+    var name = ( options.divider === 'file' ) ? nodePath.basename(lib, '.js') : lib;
+    var key  = ( options.prefix !== undefined ) ? options.prefix+'.'+name : name;
+    scanResult[key] = nodePath.resolve(base, lib);
+  });
 };
 
 module.exports = include
