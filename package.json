@@ -1,0 +1,38 @@
+{
+  "name": "rinclude",
+  "version": "0.0.2",
+  "description": "custom module include",
+  "main": "index.js",
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prugel/include.git"
+  },
+  "keywords": [
+    "require",
+    "include"
+  ],
+  "author": {
+    "name": "james kim"
+  },
+  "license": "MIT",
+  "readme": "rinclude\n=======\n\nrequire module with custome folder\n\ninstall\n```\nnpm install rinclude\n```\n\nusage\n```\n// path() execute only one, next run ignored.\n// find folder ('my_modules','lib') from project root folder\n// and search package file within it's sub folder.\n\n// server.js\nvar rinclude = require('rinclude').path('my_modules','lib');\nvar config = rinclude('config');\n\n\n// router.js\nvar rinclude = require('rinclude');\nvar config = rinclude('config');\n```\n\ncustom module\n```\nIt need to create 'package.json' like npm\n'package.json' must have 'name', 'main' property\n```",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/prugel/include/issues"
+  },
+  "homepage": "https://github.com/prugel/include",
+  "_id": "rinclude@0.0.2",
+  "_shasum": "211cdb0e2bbe18928bbdee53e3471a61b0672a50",
+  "_from": "rinclude@",
+  "_resolved": "https://registry.npmjs.org/rinclude/-/rinclude-0.0.2.tgz",
+  "dependencies": {
+    "fs-extended": "^0.2.0",
+    "lodash": "^3.3.0"
+  }
+}
