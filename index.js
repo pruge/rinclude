@@ -11,7 +11,7 @@ var nodePath    = require('path'),
 function include ( lib ) {
   var path = scanResult[lib];
 
-  console.log(scanResult);
+  // console.log(scanResult);
 
   if ( _.isUndefined(path) ) {
     throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
@@ -44,7 +44,7 @@ include.scan = function scan( folder, options ) {
   var base = nodePath.resolve( root, folder );
   function filter (itemPath, stat) {
     if (options.divider === 'file') {
-      return stat.isFile();
+      return stat.isFile() && !~itemPath.indexOf('index.js');
     } else {
       // console.log(stat);
       return stat.isDirectory();
