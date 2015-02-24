@@ -20,34 +20,78 @@ function include ( lib ) {
   return require( path );
 }
 
-include.path = function path ( folder, options ) {
+include.path = function path ( folder, prefix ) {
   var self = this;
+  var depth = 0;
 
-  // option.divider = folder or file, default is folder
-  if ( !_.isObject(options) ) {
-    options = {prefix: options, divider: 'folder'};
-  } else {
-    options.divider = options.divider || 'folder';
-  }
-
-  // folders = Array.prototype.slice.call(arguments);
-  // folders.forEach(function (folder) {
   folders.push( folder );
-    self.scan( folder, options );
-  // });
+  self.scan( root, folder, prefix,  depth );
 
   return this;
 };
 
-
-include.scan = function scan( folder, options ) {
+include.scan = function scan( root, folder, prefix, depth ) {
+  depth++;
+  var self = this;
   var base = nodePath.resolve( root, folder );
+
+  // console.log(root, hasIndexJs(root));
+  if (depth !== 1 && hasIndexJs(root) ) {
+    return true;
+  }
+
+  function hasIndexJs (path) {
+    return _.includes( fs.listAllSync( path, {recursive: 0} ), 'index.js' );
+  }
+
+  function generateIndexJs (path) {
+    var json = {}, content = [], last;
+    var files = fs.listAllSync( path, {recursive: 0, filter: function (itemPath, stat) {
+      if ( nodePath.extname(itemPath) !== '.js' && !stat.isDirectory() ) return false;
+      if ( _.includes(itemPath, 'index.js') ) return false;
+      return true;
+    }} );
+
+    content.push('module.exports = {');
+
+    last = _.last(files);
+    _.forEach(files,  function (file) {
+      var name = nodePath.basename(file, '.js');
+      var str = '  '+name+' : require(\'./'+ name+ '\')'
+      str = ( last !== file ) ? str + ', ' : str;
+      content.push( str );
+    });
+
+    content.push('};')
+    content = content.join('\n');
+
+    fs.writeFileSync( nodePath.resolve(path, 'index.js'), content );
+  }
+
+  function getProperty (path) {
+    var stat = undefined;
+    try {
+      stat = fs.lstatSync( nodePath.resolve(path, '.generateIndex') );
+    } catch (e) {
+
+    } finally {
+      return !_.isUndefined( stat );
+    }
+
+  }
+
   function filter (itemPath, stat) {
-    if (options.divider === 'file') {
-      return stat.isFile() && !~itemPath.indexOf('index.js');
+    if (!!~itemPath.indexOf('index.js')) {
+      return false;
+    }
+
+    if (stat.isDirectory()) {
+      if (getProperty(itemPath)) {
+        generateIndexJs(itemPath);
+      }
+      return true;
     } else {
-      // console.log(stat);
-      return stat.isDirectory();
+      return true;
     }
   }
   var fsOptions = {
@@ -55,25 +99,29 @@ include.scan = function scan( folder, options ) {
     filter: filter
   };
 
-  this.checkDuplicate( libs, fs.listAllSync( base, fsOptions ), base, options );
+  this.checkDuplicate( libs, fs.listAllSync( base, fsOptions ), base, prefix );
+
+  if (depth !== 1 && !hasIndexJs(root)) {
+    return false;
+  }
 };
 
-include.checkDuplicate = function checkDuplicate ( prevLibs, nowLibs, base, options ) {
+include.checkDuplicate = function checkDuplicate ( prevLibs, nowLibs, base, prefix ) {
   nowLibs.forEach(function (lib) {
-    var key  = ( options.prefix !== undefined ) ? options.prefix+'.'+lib : lib;
+    var key  = ( prefix !== undefined ) ? prefix+'.'+lib : lib;
     if ( _.includes( prevLibs, key) ) {
       throw new Error('[' + key + '] module is duplicate. check it.');
     }
   });
 
-  this.generate( nowLibs, base, options );
+  this.generate( nowLibs, base, prefix );
   libs = prevLibs.concat( nowLibs );
 };
 
-include.generate = function generate ( nowLibs, base, options ) {
+include.generate = function generate ( nowLibs, base, prefix ) {
   nowLibs.forEach(function (lib) {
-    var name = ( options.divider === 'file' ) ? nodePath.basename(lib, '.js') : lib;
-    var key  = ( options.prefix !== undefined ) ? options.prefix+'.'+name : name;
+    var name = nodePath.basename(lib, '.js');
+    var key  = ( prefix !== undefined ) ? prefix+'.'+name : name;
     scanResult[key] = nodePath.resolve(base, lib);
   });
 };
