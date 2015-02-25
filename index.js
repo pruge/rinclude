@@ -11,12 +11,21 @@ var nodePath    = require('path'),
 function include ( lib ) {
   var path = scanResult[lib];
 
-  // console.log(scanResult);
-
   if ( _.isUndefined(path) ) {
     throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
   }
 
+  // var temp = require( path );
+  // console.log( lib );
+  // if (lib === 'server.config') {
+  //   console.log( lib, path,  temp );
+  //   if ( _.isEmpty( temp ))
+  //     throw new Error( 'check ');
+  // }
+  //
+  // else
+  //   console.log( lib );
+  // return temp;
   return require( path );
 }
 
@@ -44,21 +53,37 @@ include.scan = function scan( root, folder, prefix, depth ) {
     return _.includes( fs.listAllSync( path, {recursive: 0} ), 'index.js' );
   }
 
-  function generateIndexJs (path) {
+  function generateIndexJs (path, targets) {
     var json = {}, content = [], last;
-    var files = fs.listAllSync( path, {recursive: 0, filter: function (itemPath, stat) {
-      if ( nodePath.extname(itemPath) !== '.js' && !stat.isDirectory() ) return false;
-      if ( _.includes(itemPath, 'index.js') ) return false;
-      return true;
-    }} );
+    var files = {};
+
+    targets.map(function (target) {
+      target = target.trim();
+      var url = (!_.isEmpty(target)) ? path+'/'+target : path;
+      var list = fs.listAllSync( url , {recursive: 0, filter: function (itemPath, stat) {
+        if ( nodePath.extname(itemPath) !== '.js' && !stat.isDirectory() ) return false;
+        if ( _.includes(itemPath, 'index.js') ) return false;
+        return true;
+      }} );
+
+      list.map(function (file) {
+        if (!_.isEmpty(files[file])) {
+          throw new Error('duplicate file [' + file + '], between ' + files[file] + ', ' + target+'/'+file);
+        }
+        files[file] = (!_.isEmpty(target)) ? target+'/'+file : file;
+      });
+      // files = files.concat(list);
+    });
+
+    // console.log(files);
 
     content.push('module.exports = {');
 
-    last = _.last(files);
-    _.forEach(files,  function (file) {
-      var name = nodePath.basename(file, '.js');
-      var str = '  '+name+' : require(\'./'+ name+ '\')'
-      str = ( last !== file ) ? str + ', ' : str;
+    last = _.last( _.keys(files) );
+    _.forEach(files,  function (file, key) {
+      var name = nodePath.basename(key, '.js');
+      var str = '  '+name+' : require(\'./'+ file+ '\')'
+      str = ( last !== key ) ? str + ', ' : str;
       content.push( str );
     });
 
@@ -87,7 +112,10 @@ include.scan = function scan( root, folder, prefix, depth ) {
 
     if (stat.isDirectory()) {
       if (getProperty(itemPath)) {
-        generateIndexJs(itemPath);
+        var targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
+          // targets = _.compact(targets);
+        // console.log(targets);
+        generateIndexJs(itemPath, targets);
       }
       return true;
     } else {
