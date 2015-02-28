@@ -10,26 +10,25 @@ npm install rinclude
 
 usage
 ```
-// path() execute only one, next run ignored.
-// find folder ('./a/b/c') from project root folder
-// and search package file within it's sub folder.
+var include = require('rinclude');
 
-// folder tree
-/ root
-  | - server.js
-  | - lib
-       | - router
-       |    - index.js
-       | - config
-            = index.js
+// set path.
+// include.path( path, prefix );
+include.path('./lib');
+include.path('')
 
+// option
+if folder have ".generateInde" file, then generate index.js
+see example
 
-// /server.js
-var rinclude = require('rinclude').path('./');
-var config   = rinclude('config');
+var include = require('rinclude');
 
 
-// /lib/router/index.js
-var rinclude = require('rinclude');
-var config   = rinclude('config');
+include('display').print();
+include('show').print();
+
+var timer = include('timer');
+timer.start.print();
+timer.pause.print();
+timer.stop.print();
 ```

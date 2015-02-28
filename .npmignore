@@ -3,6 +3,6 @@
 .idea
 Makefile
 docs/
-examples/
-support/
+node_modules/
+examples/node_modules/
 test/
