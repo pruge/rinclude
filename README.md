@@ -18,7 +18,7 @@ see example
 var include = require('rinclude');
 
 // set path.
-// include.path( path, prefix );
+// include.path( path, [prefix] );
 include.path('./lib');
 include.path('./app', 'app');
 
