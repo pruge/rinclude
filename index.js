@@ -2,11 +2,13 @@
 var nodePath    = require('path'),
     _           = require('lodash'),
     fs          = require('fs-extended'),
+    callsite    = require('callsite'),
 
     scanResult  = {},
     libs        = [],
     folders     = [],
-    root        = nodePath.resolve(__dirname, '../../');
+    // root        = nodePath.resolve(__dirname, '../../');
+    root;
 
 function include ( lib ) {
   var path = scanResult[lib];
@@ -19,9 +21,12 @@ function include ( lib ) {
 }
 
 include.path = function path ( folder, prefix ) {
-  var self = this;
-  var depth = 0;
-
+  var self = this,
+      depth = 0
+      stack = callsite(),
+      requester = stack[1].getFileName();
+  root = nodePath.dirname( requester );
+  console.log(root);
   folders.push( folder );
   self.scan( root, folder, prefix,  depth );
 
