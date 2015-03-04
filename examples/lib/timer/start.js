@@ -1,3 +1,3 @@
 exports.print = function () {
-  console.log('start');
+  console.log('lib/timer/start');
 };

@@ -1,3 +1,3 @@
 exports.print = function () {
-  console.log('display');
+  console.log('lib/display');
 };

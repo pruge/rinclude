@@ -1,3 +1,3 @@
 exports.print = function () {
-  console.log('show');
+  console.log('lib/show');
 };

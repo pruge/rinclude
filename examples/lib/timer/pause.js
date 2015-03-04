@@ -1,3 +1,3 @@
 exports.print = function () {
-  console.log('pause');
+  console.log('lib/timer/pause');
 };
