@@ -11,7 +11,11 @@ npm install rinclude
 usage
 
 // option
-// if folder have ".generateIndex" file, then generate index.js
+// if folder have ".generateIndex" file
+// then generate index.js
+
+see example
+
 ```
 var include = require('rinclude');
 
