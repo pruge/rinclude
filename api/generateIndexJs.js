@@ -3,7 +3,6 @@ var fs          = require('fs-extended'),
     nodePath    = require('path'),
     _           = require('lodash'),
     content     = [],   // temp array
-    last,               // last item of files
     files;              // lib : absolute directory
 
 module.exports = function generateIndexJs (path, targets) {
@@ -49,7 +48,7 @@ module.exports = function generateIndexJs (path, targets) {
 
   // console.log(files);
 
-  last = _.last( _.keys(files) );
+  // last = _.last( _.keys(files) );
   content = [];
   content.push('module.exports = {');
     print( 3, files );
@@ -60,6 +59,8 @@ module.exports = function generateIndexJs (path, targets) {
 }
 
 function print( offset, obj ) {
+  var last = _.last( _.keys(obj) ); // last item of obj
+
   _.forEach(obj,  function (file, key) {
     var name, str;
     name = nodePath.basename(key, '.js');
