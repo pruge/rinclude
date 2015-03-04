@@ -14,7 +14,8 @@ usage
 // if folder have ".generateIndex" file
 // then generate index.js
 
-see example
+
+# see example
 
 ```
 var include = require('rinclude');
@@ -40,4 +41,11 @@ appTimer.start.print();
 appTimer.pause.print();
 appTimer.stop.print();
 
+
+// .generateIndex
+// api, lib:util
+var timer2 = include('timer2');
+
+timer2.start.print();
+timer2.util.stop.print();
 ```
