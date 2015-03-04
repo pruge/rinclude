@@ -9,11 +9,11 @@ npm install rinclude
 ```
 
 usage
-
+```
 // option
 // if folder have ".generateIndex" file
-// then generate index.js
-
+// then auto generate index.js
+```
 
 # see example
 
