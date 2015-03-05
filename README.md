@@ -2,6 +2,7 @@ rinclude
 =======
 
 require module with custom folder
+generate index.js automatically
 
 install
 ```
@@ -13,6 +14,10 @@ usage
 // option
 // if folder have ".generateIndex" file
 // then auto generate index.js
+
+.gnerateIndex
+- empty : list up in directory
+- ... see folder example timer, timer2
 ```
 
 # see example
@@ -21,7 +26,7 @@ usage
 ```
 var include = require('rinclude');
 
-// set path.
+// set path in entry file.
 // include.path( path, [prefix] );
 include.path('./lib');
 include.path('./app', 'app');
