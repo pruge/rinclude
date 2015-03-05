@@ -2,8 +2,9 @@
 var fs          = require('fs-extended'),
     nodePath    = require('path'),
     _           = require('lodash'),
+    colors      = require('colors'),
 
-    getProperty = require('./getProperty');              
+    getProperty = require('./getProperty');
 
 module.exports = function generateIndexJs (path, targets) {
   var content = [],     // temp array
@@ -20,21 +21,34 @@ module.exports = function generateIndexJs (path, targets) {
 
     var url = (!_.isEmpty(target)) ? path+'/'+target : path;
     // get list except index.js, !.js !directory
-    var list = fs.listAllSync( url , {recursive: 0, filter: function (itemPath, stat) {
-      // if ! .js or directory then pass
-      if ( nodePath.extname(itemPath) !== '.js' && !stat.isDirectory() ) return false;
+    var list;
+    try {
+      list = fs.listAllSync( url , {recursive: 0, filter: function (itemPath, stat) {
+        // if ! .js or directory then pass
+        if ( nodePath.extname(itemPath) !== '.js' && !stat.isDirectory() ) return false;
 
-      // if directory, then generateIndex
-      if (stat.isDirectory() && getProperty(itemPath)) {
-        var targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
-        generateIndexJs(itemPath, targets);
+        // if directory, then generateIndex
+        if (stat.isDirectory() && getProperty(itemPath)) {
+          var targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
+          generateIndexJs(itemPath, targets);
+        }
+
+        // index.js pass
+        if ( _.includes(itemPath, 'index.js') ) return false;
+
+        return true;
+      }} );
+    } catch (e) {
+      if (e.errno === -2 ) {
+        // console.log( '[rinclude] '.yellow + target.green + ' is not exist.' );
+        // console.log( '[rinclude] '.yellow + 'check ' + '.generateIndex'.green);
+        // console.log( '[rinclude] '.yellow + 'at '+path);
+      } else {
+        throw e;
       }
-
-      // index.js pass
-      if ( _.includes(itemPath, 'index.js') ) return false;
-
-      return true;
-    }} );
+    } finally {
+      list = list || [];
+    }
 
     if (!_.isEmpty(prefix)) {
       files[prefix] = files[prefix] || {};

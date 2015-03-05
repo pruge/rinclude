@@ -3,6 +3,7 @@ var nodePath    = require('path'),
     _           = require('lodash'),
     fs          = require('fs-extended'),
     callsite    = require('callsite'),
+    colors      = require('colors'),
 
     getList     = require('./api/getList'),
 
@@ -15,6 +16,7 @@ function include ( lib ) {
   var path = scanResult[lib];
 
   if ( _.isUndefined(path) ) {
+    console.log('[rinclude] '.yellow + lib.green + ' module not found in path [ ' + folders.join(', ').green + ' ]');
     throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
   }
 
