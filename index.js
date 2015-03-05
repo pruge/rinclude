@@ -51,7 +51,7 @@ include.checkDuplicate = function checkDuplicate ( prevLibs, newLibs, base, pref
   newLibs.forEach(function (lib) {
     var key  = ( prefix !== undefined ) ? prefix+'.'+lib : lib;
     if ( _.includes( prevLibs, key) ) {
-      throw new Error('[' + key + '] module is duplicate. check it.');
+      throw new Error('[' + key + '] module is duplicated. check it.');
     }
   });
   libs = prevLibs.concat( newLibs );

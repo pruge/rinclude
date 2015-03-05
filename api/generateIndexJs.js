@@ -2,11 +2,12 @@
 var fs          = require('fs-extended'),
     nodePath    = require('path'),
     _           = require('lodash'),
-    content     = [],   // temp array
-    files;              // lib : absolute directory
+
+    getProperty = require('./getProperty');              
 
 module.exports = function generateIndexJs (path, targets) {
-  files = {};
+  var content = [],     // temp array
+      files = {};       // lib : absolute directory
 
   targets.map(function (target) {
     var prefix;
@@ -22,18 +23,26 @@ module.exports = function generateIndexJs (path, targets) {
     var list = fs.listAllSync( url , {recursive: 0, filter: function (itemPath, stat) {
       // if ! .js or directory then pass
       if ( nodePath.extname(itemPath) !== '.js' && !stat.isDirectory() ) return false;
+
+      // if directory, then generateIndex
+      if (stat.isDirectory() && getProperty(itemPath)) {
+        var targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
+        generateIndexJs(itemPath, targets);
+      }
+
       // index.js pass
       if ( _.includes(itemPath, 'index.js') ) return false;
+
       return true;
     }} );
 
-    // check duplicate in targets
     if (!_.isEmpty(prefix)) {
       files[prefix] = files[prefix] || {};
     }
 
     // get files object
     list.map(function (file) {
+      // check duplicate in targets
       if (!_.isEmpty(files[file])) {
         throw new Error('duplicate file [' + file + '], between ' + files[file] + ', ' + target+'/'+file);
       }
@@ -56,24 +65,24 @@ module.exports = function generateIndexJs (path, targets) {
   content = content.join('\n');
 
   fs.writeFileSync( nodePath.resolve(path, 'index.js'), content );
-}
 
-function print( offset, obj ) {
-  var last = _.last( _.keys(obj) ); // last item of obj
+  function print( offset, obj ) {
+    var last = _.last( _.keys(obj) ); // last item of obj
 
-  _.forEach(obj,  function (file, key) {
-    var name, str;
-    name = nodePath.basename(key, '.js');
+    _.forEach(obj,  function (file, key) {
+      var name, str;
+      name = nodePath.basename(key, '.js');
 
-    if ( !_.isString(file) ) {
-      content.push(Array(offset).join(' ')+name+' : {');
-      print( offset+2, file );
-      str = Array(offset).join(' ')+'}';
-    } else {
-      str = Array(offset).join(' ')+name+' : require(\'./'+ file+ '\')'
+      if ( !_.isString(file) ) {
+        content.push(Array(offset).join(' ')+name+' : {');
+        print( offset+2, file );
+        str = Array(offset).join(' ')+'}';
+      } else {
+        str = Array(offset).join(' ')+name+' : require(\'./'+ file+ '\')'
 
-    }
-    str = ( last !== key ) ? str + ', ' : str;
-    content.push( str );
-  });
+      }
+      str = ( last !== key ) ? str + ', ' : str;
+      content.push( str );
+    });
+  }
 }

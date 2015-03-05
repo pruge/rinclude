@@ -1,7 +1,7 @@
 rinclude
 =======
 
-require module with custome folder
+require module with custom folder
 
 install
 ```
