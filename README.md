@@ -18,12 +18,18 @@ usage
 # see example
 
 ```
+// app.js
 var include = require('rinclude');
 
 // set path.
 // include.path( path, [prefix] );
 include.path('./lib');
 include.path('./app', 'app');
+```
+
+```
+// anotherFile.js
+var include = require('rinclude');
 
 include('display').print();
 include('show').print();
