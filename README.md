@@ -17,8 +17,8 @@ usage
 
 # see example
 
+- app.js
 ```
-// app.js
 var include = require('rinclude');
 
 // set path.
@@ -27,8 +27,8 @@ include.path('./lib');
 include.path('./app', 'app');
 ```
 
+- anotherFile.js
 ```
-// anotherFile.js
 var include = require('rinclude');
 
 include('display').print();
