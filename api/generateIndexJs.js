@@ -58,6 +58,7 @@ module.exports = function generateIndexJs (path, targets) {
     list.map(function (file) {
       // check duplicate in targets
       if (!_.isEmpty(files[file])) {
+        console.log('[rinclude] '.yellow + 'duplicate file '+file.green + ' between ' + [files[file], ', ', target, '/', file].join('').green );
         throw new Error('duplicate file [' + file + '], between ' + files[file] + ', ' + target+'/'+file);
       }
 

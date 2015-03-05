@@ -1,6 +1,6 @@
 {
   "name": "rinclude",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "custom module include",
   "main": "index.js",
   "engines": {
