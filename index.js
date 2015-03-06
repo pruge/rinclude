@@ -53,6 +53,9 @@ include.checkDuplicate = function checkDuplicate ( prevLibs, newLibs, base, pref
   newLibs.forEach(function (lib) {
     var key  = ( prefix !== undefined ) ? prefix+'.'+lib : lib;
     if ( _.includes( prevLibs, key) ) {
+      console.log('[rinclude] '.yellow + key.green + ' module is duplicated. check it.');
+      console.log('[rinclude] '.yellow + 'in directory '+folders.join(', ').green );
+      console.log('[rinclude] '.yellow + 'rename or use prefix.');
       throw new Error('[' + key + '] module is duplicated. check it.');
     }
   });
