@@ -1,7 +1,7 @@
 rinclude
 =======
 
-require module with custom folder
+require module with custom folder and 
 generate index.js automatically
 
 install

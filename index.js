@@ -16,20 +16,29 @@ function include ( lib ) {
   var path = scanResult[lib];
 
   if ( _.isUndefined(path) ) {
+    // absolute directory of caller
+    stack = callsite(),
+    requester = stack[1].getFileName();
+    var callerPath = nodePath.dirname( requester );
+
     console.log('[rinclude] '.yellow + lib.green + ' module not found in path [ ' + folders.join(', ').green + ' ]');
+    console.log('[rinclude] '.yellow + 'in directory '+callerPath.green );
     throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
   }
 
   return require( path );
 }
 
+function getCallerDirectory () {
+}
+
 include.path = function path ( folder, prefix ) {
   var self = this,
 
-      // absolute directory of caller
-      stack = callsite(),
-      requester = stack[1].getFileName();
-      root = nodePath.dirname( requester );
+  // absolute directory of caller
+  stack = callsite(),
+  requester = stack[1].getFileName();
+  root = nodePath.dirname( requester );
 
   // add folder
   folders.push( folder );
