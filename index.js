@@ -17,7 +17,7 @@ function include ( lib ) {
 
   if ( _.isUndefined(path) ) {
     // absolute directory of caller
-    stack = callsite(),
+    var stack = callsite(),
     requester = stack[1].getFileName();
     var callerPath = nodePath.dirname( requester );
 
