@@ -22,7 +22,7 @@ function include ( lib ) {
     var callerPath = nodePath.dirname( requester );
 
     console.log('[rinclude] '.yellow + lib.green + ' module not found in path [ ' + folders.join(', ').green + ' ]');
-    console.log('[rinclude] '.yellow + 'in directory '+callerPath.green );
+    console.log('[rinclude] '.yellow + 'in '+requester.green );
     throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
   }
 
