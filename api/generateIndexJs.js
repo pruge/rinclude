@@ -56,16 +56,16 @@ module.exports = function generateIndexJs (path, targets) {
 
     // get files object
     list.map(function (file) {
-      // check duplicate in targets
-      if (!_.isEmpty(files[file])) {
-        console.log('[rinclude] '.yellow + 'duplicate file '+file.green + ' between ' + [files[file], ', ', target, '/', file].join('').green );
-        console.log('[rinclude] '.yellow + 'at '+path.green );
-        throw new Error('duplicate file [' + file + '], between ' + files[file] + ', ' + target+'/'+file);
-      }
 
       if (!_.isEmpty(prefix)) {
         files[prefix][file] = (!_.isEmpty(target)) ? target+'/'+file : file;
       } else {
+        // check duplicate in targets
+        if (!_.isEmpty(files[file])) {
+          console.log('[rinclude] '.yellow + 'duplicate file '+file.green + ' between ' + [files[file], ', ', target, '/', file].join('').green );
+          console.log('[rinclude] '.yellow + 'at '+path.green );
+          throw new Error('duplicate file [' + file + '], between ' + files[file] + ', ' + target+'/'+file);
+        }
         files[file] = (!_.isEmpty(target)) ? target+'/'+file : file;
       }
     });
