@@ -1,12 +1,18 @@
 rinclude
 =======
 
-require module with custom folder and 
+require module with custom folder and
 generate index.js automatically
 
 install
 ```
 npm install rinclude
+```
+
+info
+```
+if generate index.js automatically.
+index.js should be ignored when nodemon, supervisor or pm is used.
 ```
 
 usage
