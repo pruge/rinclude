@@ -1,6 +1,6 @@
 {
   "name": "rinclude",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "custom module include",
   "main": "index.js",
   "engines": {
@@ -15,7 +15,10 @@
   },
   "keywords": [
     "require",
-    "include"
+    "include",
+    "custom module",
+    "custom",
+    "module"
   ],
   "author": {
     "name": "james kim"
@@ -26,6 +29,7 @@
   },
   "homepage": "https://github.com/prugel/rinclude",
   "dependencies": {
+    "bluebird": "^2.9.34",
     "callsite": "^1.0.0",
     "colors": "^1.0.3",
     "fs-extended": "^0.2.0",

@@ -4,6 +4,7 @@ var nodePath    = require('path'),
     fs          = require('fs-extended'),
     callsite    = require('callsite'),
     colors      = require('colors'),
+    Promise     = require('bluebird'),
 
     getList     = require('./api/getList'),
 
@@ -16,17 +17,26 @@ function include ( lib ) {
   var path = scanResult[lib];
 
   if ( _.isUndefined(path) ) {
-    // absolute directory of caller
-    var stack = callsite(),
-    requester = stack[1].getFileName();
-    var callerPath = nodePath.dirname( requester );
+    return new Promise(function (resolve, reject) {
+      process.nextTick(function () {
+        path = scanResult[lib];
+        if (_.isUndefined(path)) {
+          // absolute directory of caller
+          var stack = callsite(),
+          requester = stack[1].getFileName();
+          var callerPath = nodePath.dirname( requester );
 
-    console.log('[rinclude] '.yellow + lib.green + ' module not found in path [ ' + folders.join(', ').green + ' ]');
-    console.log('[rinclude] '.yellow + 'in '+requester.green );
-    throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
+          console.log('[rinclude] '.yellow + lib.green + ' module not found in path [ ' + folders.join(', ').green + ' ]');
+          console.log('[rinclude] '.yellow + 'in '+requester.green );
+          throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
+        }
+        resolve(require(path));
+      });
+    });
+  } else {
+
+    return require( path );
   }
-
-  return require( path );
 }
 
 function getCallerDirectory () {
