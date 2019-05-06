@@ -1,7 +1,6 @@
 'use strict';
-var fs = require('fs-extended'),
+const fs = require('fs-extended'),
   nodePath = require('path'),
-  // _           = require('lodash'),
   includes = require('lodash.includes'),
   isEmpty = require('lodash.isempty'),
   last = require('lodash.last'),
@@ -12,11 +11,11 @@ var fs = require('fs-extended'),
   getProperty = require('./getProperty');
 
 module.exports = function generateIndexJs(path, targets) {
-  var content = [],     // temp array
+  let content = [],     // temp array
     files = {};       // lib : absolute directory
 
   targets.map(function (target) {
-    var prefix;
+    let prefix;
     target = target.trim();
     if (includes(target, ':')) {
       var tmp = target.split(':');
@@ -24,9 +23,9 @@ module.exports = function generateIndexJs(path, targets) {
       prefix = tmp[1].trim();
     }
 
-    var url = (!isEmpty(target)) ? path + '/' + target : path;
+    const url = (!isEmpty(target)) ? path + '/' + target : path;
     // get list except index.js, !.js !directory
-    var list;
+    let list;
     try {
       list = fs.listAllSync(url, {
         recursive: 0, filter: function (itemPath, stat) {
@@ -78,34 +77,35 @@ module.exports = function generateIndexJs(path, targets) {
     });
   });
 
-  // console.log(files);
+  // console.log('files', files);
+  return files;
 
-  // last = last( keys(files) );
-  content = [];
-  content.push('module.exports = {');
-  print(3, files);
-  content.push('};')
-  content = content.join('\n');
+  // // last = last( keys(files) );
+  // content = [];
+  // content.push('module.exports = {');
+  // print(3, files);
+  // content.push('};')
+  // content = content.join('\n');
 
-  fs.writeFileSync(nodePath.resolve(path, 'index.js'), content);
+  // fs.writeFileSync(nodePath.resolve(path, 'index.js'), content);
 
-  function print(offset, obj) {
-    var lastItem = last(Object.keys(obj)); // last item of obj
+  // function print(offset, obj) {
+  //   var lastItem = last(Object.keys(obj)); // last item of obj
 
-    forEach(obj, function (file, key) {
-      var name, str;
-      name = nodePath.basename(key, '.js');
+  //   forEach(obj, function (file, key) {
+  //     var name, str;
+  //     name = nodePath.basename(key, '.js');
 
-      if (!isString(file)) {
-        content.push(Array(offset).join(' ') + name + ' : {');
-        print(offset + 2, file);
-        str = Array(offset).join(' ') + '}';
-      } else {
-        str = Array(offset).join(' ') + name + ' : require(\'./' + file + '\')'
+  //     if (!isString(file)) {
+  //       content.push(Array(offset).join(' ') + name + ' : {');
+  //       print(offset + 2, file);
+  //       str = Array(offset).join(' ') + '}';
+  //     } else {
+  //       str = Array(offset).join(' ') + name + ' : require(\'./' + file + '\')'
 
-      }
-      str = (lastItem !== key) ? str + ', ' : str;
-      content.push(str);
-    });
-  }
+  //     }
+  //     str = (lastItem !== key) ? str + ', ' : str;
+  //     content.push(str);
+  //   });
+  // }
 }

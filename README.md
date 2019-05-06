@@ -1,6 +1,6 @@
 # rinclude
 
-require module with custom folder and generate index.js automatically
+require module with custom folder and generate virtual index.js automatically
 
 
 
@@ -17,33 +17,11 @@ const include = require('rinclude');
 global.include = include; // It can be used anywhere.
 ```
 
-## warning
+## Notice
 ```
-When using programs such as pm2 and nodemon,
-the index.js file must be excluded.
-Otherwise, you will end up in an infinite loop.
-
-ex) pm2
-module.exports = {
-  apps : [{
-    name: "app",
-    script: "./app.js",
-    watch: ["server", "client"],
-    watch_delay: 1000,
-    ignore_watch : ["node_modules", "**/index.js"],  // ignore index.js
-    watch_options: {
-      "followSymlinks": false
-    },
-    env: {
-      NODE_ENV: "development",
-    },
-    env_production: {
-      NODE_ENV: "production",
-    }
-  }]
-}
+It no longer create an index.js file.
+You do not need to exclude the index.js file from programs like pm2.
 ```
-
 
 ## Detailed usage
 ### basic
@@ -61,11 +39,25 @@ global.include = include; // It can be used anywhere.
  │           ├── start.js
  │           ├── stop.js
  │           └── index.js
- └── app.js
+ ├── app.js
+ └── sample.js
 
- include.path('./custom');
 
 // Access
+
+// app.js
+const include = require('rinclude');
+global.include = include; // It can be used anywhere.
+
+include.path('./custom');
+
+const timer = include('timer');
+timer.start();
+timer.stop();
+
+require('.sample')
+
+// smaple.js
 const timer = include('timer');
 timer.start();
 timer.stop();
@@ -104,7 +96,7 @@ timer2.start();
 timer2.stop();
 ```
 
-### Automatically create an index file
+### Automatically create an virtual index file
 ```
  .
  ├── custom
@@ -114,8 +106,7 @@ timer2.stop();
  └── app.js
 
 include.path('./custom');
-const timer = include('timer'); // It do not have anything.
-                                // The index.js file is required.
+const timer = include('timer'); // The index.js file is required.
 
 // Add the .generateIndex file.
  .
@@ -126,18 +117,10 @@ const timer = include('timer'); // It do not have anything.
  │           └── .generateIndex
  └── app.js
 
-// Automatically create index.js file.
- .
- ├── custom
- │     └── timer
- │           ├── start.js
- │           ├── stop.js
- │           ├── index.js
- │           └── .generateIndex
- └── app.js
+// Automatically create virtual index.js file.
 
-// The contents of index.js are as follows.
-// Generated index.js
+// The contents of virtual index.js are as follows.
+// Generated virtual index.js
 
 module.exports = {
   start : require('./start.js'),
@@ -160,12 +143,11 @@ timer.stop();
  │           ├── start.js
  │           ├── stop.js
  │           ├── pause.js       // add new file
- │           ├── index.js
  │           └── .generateIndex
  └── app.js
 
-// The contents of index.js are as follows.
-// Generated index.js
+// The contents of virtual index.js are as follows.
+// Generated virtual index.js
 
 module.exports = {
   pause: require('./pause.js'),
@@ -181,12 +163,6 @@ const timer = include('timer');
 timer.start();
 timer.stop();
 timer.pause();
-
-// Warning !!!!
-
-When using programs such as pm2 and nodemon,
-the index.js file must be excluded.
-Otherwise, you will end up in an infinite loop.
 ```
 
 ### Usage : .generateIndex
@@ -199,11 +175,10 @@ Otherwise, you will end up in an infinite loop.
  │     └── timer
  │           ├── start.js
  │           ├── stop.js
- │           ├── index.js
  │           └── .generateIndex
  └── app.js
 
-// Generated index.js
+// Generated virtual index.js
 
 module.exports = {
   start : require('./start.js'),
@@ -219,7 +194,6 @@ module.exports = {
  │           │    └── stop.js
  │           ├── lcd
  │           │    └── display.js
- │           ├── index.js
  │           └── .generateIndex
  └── app.js
 
@@ -228,7 +202,7 @@ ex1)
 
 api, lcd
 
-// Generated index.js
+// Generated virtual index.js
 
 module.exports = {
   start : require('./api/start.js'),
@@ -241,7 +215,7 @@ ex2)
 
 api, lcd:lcd
 
-// Generated index.js
+// Generated virtual index.js
 
 module.exports = {
   start : require('./api/start.js'),
@@ -256,7 +230,7 @@ ex3)
 
 api:api, lcd
 
-// Generated index.js
+// Generated virtual index.js
 
 module.exports = {
   api : {
@@ -278,7 +252,6 @@ module.exports = {
  │           │    └── display.js
  │           ├── something
  │           │    └── notNeeded.js
- │           ├── index.js
  │           └── .generateIndex
  └── app.js
 
@@ -286,11 +259,11 @@ module.exports = {
 
 api, lcd:lcd
 
-// Generated index.js
+// Generated virtual index.js
 
 module.exports = {
-  start : require('./start.js'),
-  stop : require('./stop.js'),
+  start : require('./api/start.js'),
+  stop : require('./api/stop.js'),
   lcd: {
     display: require('./lcd/display.js)
   }

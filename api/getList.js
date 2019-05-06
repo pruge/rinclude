@@ -1,11 +1,11 @@
 'use strict';
-var fs = require('fs-extended'),
-  // _                 = require('lodash'),
+const fs = require('fs-extended'),
   includes = require('lodash.includes'),
 
   generateIndexJs = require('./generateIndexJs'),
   getProperty = require('./getProperty');
 
+let base;
 
 // exclude index.js
 function filter(itemPath, stat) {
@@ -16,24 +16,40 @@ function filter(itemPath, stat) {
   // if directory, check .generateIndex, then generate
   if (stat.isDirectory()) {
     if (getProperty(itemPath)) {
-      var targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
+      const targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
       generateIndexJs(itemPath, targets);
+    } else {
+
     }
   }
 
   return true;
 }
-var fsOptions = {
+
+function filter2(itemPath, stat) {
+  if (includes(itemPath, 'index.js')) {
+    return false;
+  }
+
+  return true;
+}
+
+
+
+let fsOptions = {
   recursive: 0,
   filter: filter
 };
 
-module.exports = function getList(path) {
-  var fsOptions = {
-    recursive: 0,
-    filter: filter
-  };
-
+/**
+ * generate
+ *   - true  : Generate index.js after checking .generateIndex
+ *   - false : Folder list only
+ */
+module.exports = function getList(path, generate) {
+  if (!generate) {
+    fsOptions.filter = filter2;
+  }
   // return files except index.js
   return fs.listAllSync(path, fsOptions);
 };

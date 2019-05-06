@@ -1,12 +1,11 @@
-var fs = require('fs'),
+const fs = require('fs'),
   nodePath = require('path'),
   isUndefined = require('lodash.isundefined');
-// _           = require('lodash');
 
-module.exports = function getProperty(path) {
-  var stat = undefined;
+module.exports = function getProperty(path, file = '.generateIndex') {
+  let stat = undefined;
   try {
-    stat = fs.lstatSync(nodePath.resolve(path, '.generateIndex'));
+    stat = fs.lstatSync(nodePath.resolve(path, file));
   } catch (e) {
 
   } finally {
