@@ -10,9 +10,8 @@ npm install rinclude
 ```
 
 ## Usage
+Add the following to the startup file
 ```
-// Add the following to the startup file
-
 const include = require('rinclude');
 global.include = include; // It can be used anywhere.
 ```
@@ -25,13 +24,14 @@ You do not need to exclude the index.js file from programs like pm2.
 
 ## Detailed usage
 ### basic
+Add the following to the startup file
 ```
-// Add the following to the startup file
-
 const include = require('rinclude');
 global.include = include; // It can be used anywhere.
+```
 
-
+example
+```
 // Read files in custom folders
  .
  ├── custom
@@ -41,10 +41,9 @@ global.include = include; // It can be used anywhere.
  │           └── index.js
  ├── app.js
  └── sample.js
+```
 
-
-// Access
-
+```
 // app.js
 const include = require('rinclude');
 global.include = include; // It can be used anywhere.
@@ -56,7 +55,9 @@ timer.start();
 timer.stop();
 
 require('.sample')
+```
 
+```
 // smaple.js
 const timer = include('timer');
 timer.start();
@@ -77,11 +78,15 @@ timer.stop();
  │           ├── stop.js
  │           └── index.js
  └── app.js
+```
 
+```
 include.path('./custom);
 include.path('./custom2); // Crash
+```
 
-// Use prefix
+Use prefix
+```
 
 include.path('./custom');
 include.path('./custom2', 'two');
@@ -104,11 +109,15 @@ timer2.stop();
  │           ├── start.js
  │           └── stop.js
  └── app.js
+```
 
+```
 include.path('./custom');
 const timer = include('timer'); // The index.js file is required.
+```
 
-// Add the .generateIndex file.
+Add the .generateIndex file.
+```
  .
  ├── custom
  │     └── timer
@@ -116,27 +125,31 @@ const timer = include('timer'); // The index.js file is required.
  │           ├── stop.js
  │           └── .generateIndex
  └── app.js
+```
 
-// Automatically create virtual index.js file.
+Automatically create virtual index.js file.
 
-// The contents of virtual index.js are as follows.
-// Generated virtual index.js
-
+The contents of virtual index.js are as follows.
+```
 module.exports = {
   start : require('./start.js'),
   stop : require('./stop.js')
 };
+```
 
-// You can now access the timer.
-
+You can now access the timer.
+```
 include.path('./custom');
 const timer = include('timer');
 
 timer.start();
 timer.stop();
+```
 
-// When you add a file and restart app.js,
-// index.js is created automatically
+When you add a file and restart app.js,
+virtual index.js is created automatically
+
+```
  .
  ├── custom
  │     └── timer
@@ -145,18 +158,21 @@ timer.stop();
  │           ├── pause.js       // add new file
  │           └── .generateIndex
  └── app.js
+```
 
-// The contents of virtual index.js are as follows.
-// Generated virtual index.js
+The contents of virtual index.js are as follows.
 
+```
 module.exports = {
   pause: require('./pause.js'),
   start : require('./start.js'),
   stop : require('./stop.js')
 };
+```
 
-// You can now access the timer.
+You can now access the timer.
 
+```
 include.path('./custom');
 const timer = include('timer');
 
@@ -166,10 +182,10 @@ timer.pause();
 ```
 
 ### Usage : .generateIndex
-```
 1. basic
  - Create only a .generateIndex file.
  - It lists all the files in the folder.
+```
  .
  ├── custom
  │     └── timer
@@ -177,15 +193,19 @@ timer.pause();
  │           ├── stop.js
  │           └── .generateIndex
  └── app.js
+```
 
-// Generated virtual index.js
-
+- Generated virtual index.js
+```
 module.exports = {
   start : require('./start.js'),
   stop : require('./stop.js')
 };
+```
 
 2. You can have a special folder structure.
+
+```
  .
  ├── custom
  │     └── timer
@@ -196,27 +216,30 @@ module.exports = {
  │           │    └── display.js
  │           └── .generateIndex
  └── app.js
-
+```
 ex1)
-// Contents of .gnerateIndex
-
+- Contents of .gnerateIndex
+```
 api, lcd
+```
 
-// Generated virtual index.js
-
+- Generated virtual index.js
+```
 module.exports = {
   start : require('./api/start.js'),
   stop : require('./api/stop.js'),
   display: require('./lcd/display.js)
 };
+```
 
 ex2)
-// Contents of .gnerateIndex
-
+- Contents of .gnerateIndex
+```
 api, lcd:lcd
+```
 
-// Generated virtual index.js
-
+- Generated virtual index.js
+```
 module.exports = {
   start : require('./api/start.js'),
   stop : require('./api/stop.js'),
@@ -224,14 +247,16 @@ module.exports = {
     display: require('./lcd/display.js)
   }
 };
+```
 
 ex3)
-// Contents of .gnerateIndex
-
+- Contents of .gnerateIndex
+```
 api:api, lcd
+```
 
-// Generated virtual index.js
-
+- Generated virtual index.js
+```
 module.exports = {
   api : {
     start : require('./api/start.js'),
@@ -239,9 +264,10 @@ module.exports = {
   },
   display : require('./lcd/display.js')
 };
-
+```
 
 3. Excludes undefined folders.
+```
  .
  ├── custom
  │     └── timer
@@ -254,13 +280,15 @@ module.exports = {
  │           │    └── notNeeded.js
  │           └── .generateIndex
  └── app.js
+```
 
-// Contents of .gnerateIndex
-
+- Contents of .gnerateIndex
+```
 api, lcd:lcd
+```
 
-// Generated virtual index.js
-
+- Generated virtual index.js
+```
 module.exports = {
   start : require('./api/start.js'),
   stop : require('./api/stop.js'),
@@ -268,5 +296,4 @@ module.exports = {
     display: require('./lcd/display.js)
   }
 };
-
 ```

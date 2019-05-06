@@ -36,8 +36,10 @@ function include(lib) {
   }
 
   // return require(path);
-  console.log('loaded', loaded)
-  return loaded[lib];
+  // console.log('loaded', loaded)
+  // return loaded[lib];
+  // console.log('lib', lib, loaded[lib], path);
+  return require(loaded[lib]);
 }
 
 function getCallerDirectory() {
@@ -108,7 +110,7 @@ include.generate = function generate(newLibs, base, prefix) {
       load(files, loaded, key, itemPath);
     } else if (getProperty(itemPath, 'index.js')) {
       // index.js가 있는가?
-      loaded[key] = require(itemPath);
+      loaded[key] = itemPath;
     } else {
       // 일반 파일.js만 있는가?
     }
@@ -128,7 +130,7 @@ function load(files, loaded, app, itemPath) {
       // console.log('file', file, nodePath.join(itemPath, file));
       // console.log('set', loaded, app, name);
       loaded[app] = loaded[app] || {};
-      loaded[app][name] = require(nodePath.join(itemPath, file));
+      loaded[app][name] = nodePath.join(itemPath, file);
       // console.log('loaded', loaded)
     }
 
