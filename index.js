@@ -7,19 +7,19 @@ const nodePath = require('path'),
   colors = require('colors'),
   // dot = require('dot-object'),
   isString = require('lodash.isstring'),
-  forEach = require('lodash.forEach'),
+  forEach = require('lodash.foreach'),
 
   generateIndexJs = require('./api/generateIndexJs'),
   getProperty = require('./api/getProperty'),
   getList = require('./api/getList');
 
-let scanResult = {},     // lib : absolute path
+let scanResult = {},     // lib list : absolute path
   libs = [],     // keys of scanResult
   folders = [],     // scanned folder
+  loadedPath = {},    // loaded lib with absolute path
   loaded = {},    // loaded lib
   root;
 
-// global.loaded = {};    // loaded lib
 
 function include(lib) {
   const path = scanResult[lib];
@@ -35,18 +35,13 @@ function include(lib) {
     throw new Error('[' + lib + '] module not found in path [ ' + folders.join(', ') + ' ]');
   }
 
-  // return require(path);
-  // console.log('loaded', loaded)
-  // return loaded[lib];
-  // console.log('lib', lib, loaded[lib], path);
-  return require(loaded[lib]);
+  return loaded[lib] ? loaded[lib] : loadRequire(loadedPath, lib);
 }
 
 function getCallerDirectory() {
 }
 
 include.path = function path(folder, prefix) {
-  // const self = this,
 
   // absolute directory of caller
   const stack = callsite(),
@@ -100,17 +95,17 @@ include.generate = function generate(newLibs, base, prefix) {
     const itemPath = scanResult[key] = nodePath.resolve(base, lib);
 
     // console.log(itemPath);
-    loaded[key] = {};
+    loadedPath[key] = {};
     const check = getProperty(itemPath, 'index.js');
     if (getProperty(itemPath)) {
       // .generateIndex가 있는가?
       const targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
       const files = generateIndexJs(itemPath, targets);
       // console.log('files', files);
-      load(files, loaded, key, itemPath);
+      load(files, loadedPath, key, itemPath);
     } else if (getProperty(itemPath, 'index.js')) {
       // index.js가 있는가?
-      loaded[key] = itemPath;
+      loadedPath[key] = itemPath;
     } else {
       // 일반 파일.js만 있는가?
     }
@@ -135,6 +130,27 @@ function load(files, loaded, app, itemPath) {
     }
 
   })
+}
+
+function loadRequire(loadedPath, lib) {
+  let loading = {};
+
+  const traverse = (obj, loading) => {
+    for (let k in obj) {
+      if (obj[k] && typeof obj[k] === 'object') {
+        loading[k] = {};
+        traverse(obj[k], loading[k])
+      } else {
+        // Do something with obj[k]
+        loading[k] = require(obj[k]);
+      }
+    }
+  }
+
+  traverse(loadedPath[lib], loading);
+  // console.log(loading)
+  loaded[lib] = loading;
+  return loading;
 }
 
 module.exports = include

@@ -5,7 +5,7 @@ const fs = require('fs-extended'),
   isEmpty = require('lodash.isempty'),
   last = require('lodash.last'),
   isString = require('lodash.isstring'),
-  forEach = require('lodash.forEach'),
+  forEach = require('lodash.foreach'),
   colors = require('colors'),
 
   getProperty = require('./getProperty');
