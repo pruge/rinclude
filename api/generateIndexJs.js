@@ -6,15 +6,129 @@ const fs = require('fs-extended'),
   last = require('lodash.last'),
   isString = require('lodash.isstring'),
   forEach = require('lodash.foreach'),
+
   colors = require('colors'),
 
   getProperty = require('./getProperty');
 
-module.exports = function generateIndexJs(path, targets) {
-  let content = [],     // temp array
-    files = {};       // lib : absolute directory
+/**
+ * object 내용을 문자열화 한다.
+ *
+ * @param {*} offset
+ * @param {*} obj
+ */
+function print(offset, obj) {
+  var lastItem = last(Object.keys(obj)); // last item of obj
 
-  targets.map(function (target) {
+  forEach(obj, function (file, key) {
+    var name, str;
+    name = nodePath.basename(key, '.js');
+
+    if (!isString(file)) {
+      content.push(Array(offset).join(' ') + name + ' : {');
+      print(offset + 2, file);
+      str = Array(offset).join(' ') + '}';
+    } else {
+      str = Array(offset).join(' ') + name + ' : require(\'./' + file + '\')'
+
+    }
+    str = (lastItem !== key) ? str + ', ' : str;
+    content.push(str);
+  });
+}
+
+/**
+ * index.js 파일로 출력한다.
+ *
+ * @param {*} content
+ */
+function writeIndexJs(content) {
+  // last = last( keys(files) );
+  content = [];
+  content.push('module.exports = {');
+  print(3, files);
+  content.push('};')
+  content = content.join('\n');
+
+  fs.writeFileSync(nodePath.resolve(path, 'index.js'), content);
+}
+
+/**
+ * string dot notaion을 object화 한다.
+ *
+ * @param {oject} files
+ * @param {string} path lib의 상대 경로
+ * @param {string} file lib의 절대 경로 + filename
+ * @param {string} target .generateIndex에서 정의한 target
+ * @param {string} [prefix='']
+ * @returns
+ */
+function toObject(files, path, file, root, target, prefix = '') {
+  // console.log('before path', path)
+  const tPath = path;
+  path = nodePath.normalize(path.replace(`${target}/`, `${prefix}/`)).replace(/^\/|\/$/g, '');
+  // console.log('after path', path)
+  const arr = path.split('/');
+  const length = arr.length;
+  let idx = 0;
+
+  arr.reduce((obj, i) => {
+    if (++idx === length) {
+      if (obj[i] !== undefined) {
+        const existFile = obj[i].replace(root, '');
+        const newFile = file.replace(root, '');
+
+        console.log('[rinclude] '.yellow + 'duplicate file ' + newFile.green + ' between ' + existFile.green);
+        throw new Error('duplicate file ' + newFile + ' between ' + existFile);
+      }
+      obj[i] = file;
+    } else {
+      obj[i] = obj[i] || {};
+    }
+    return obj[i];
+  }, files)
+
+  return files;
+}
+
+/**
+ * tree 읽기
+ *
+ * @param {object} files
+ * @param {string} path   listup 하기 위한 directory
+ * @param {string} target
+ * @param {string} prefix
+ */
+function listup(files, path, root, target = '', prefix = '', recursive = false) {
+
+  try {
+    fs.listAllSync(path, {
+      recursive: recursive,
+      filter: (itemPath, stat) => {
+        if (/.js/.test(itemPath)) return true;
+        return false;
+      },
+      map: (itemPath, stat) => {
+        itemPath = itemPath.replace(path, '')
+        const filename = nodePath.basename(itemPath, '.js');
+        const dirname = nodePath.dirname(itemPath);
+        const key = nodePath.join(target, dirname, filename).replace(/^\/|\/$/g, '');
+
+        toObject(files, key, nodePath.join(path, itemPath), root, target, prefix)
+
+        // console.log('itemPath', root);
+        return itemPath;
+      }
+    })
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function listupTargets(root, path, targets, files) {
+  targets = targets.filter(Boolean);
+
+  targets.map(target => {
     let prefix;
     target = target.trim();
     if (includes(target, ':')) {
@@ -24,88 +138,20 @@ module.exports = function generateIndexJs(path, targets) {
     }
 
     const url = (!isEmpty(target)) ? path + '/' + target : path;
-    // get list except index.js, !.js !directory
-    let list;
-    try {
-      list = fs.listAllSync(url, {
-        recursive: 0, filter: function (itemPath, stat) {
-          // if ! .js or directory then pass
-          if (nodePath.extname(itemPath) !== '.js' && !stat.isDirectory()) return false;
 
-          // if directory, then generateIndex
-          if (stat.isDirectory() && getProperty(itemPath)) {
-            var targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
-            generateIndexJs(itemPath, targets);
-          }
+    // .generateIndex 에 정의된 폴더 검색
+    listup(files, url, root, target, prefix, true);
+  })
 
-          // index.js pass
-          if (includes(itemPath, 'index.js')) return false;
+  // lib root 폴더 listup
+  listup(files, path, root)
+}
 
-          return true;
-        }
-      });
-    } catch (e) {
-      if (e.errno === -2) {
-        // console.log( '[rinclude] '.yellow + target.green + ' is not exist.' );
-        // console.log( '[rinclude] '.yellow + 'check ' + '.generateIndex'.green);
-        // console.log( '[rinclude] '.yellow + 'at '+path);
-      } else {
-        throw e;
-      }
-    } finally {
-      list = list || [];
-    }
+module.exports = function generateIndexJs(root, path, targets) {
+  let files = {};
 
-    if (!isEmpty(prefix)) {
-      files[prefix] = files[prefix] || {};
-    }
-
-    // get files object
-    list.map(function (file) {
-
-      if (!isEmpty(prefix)) {
-        files[prefix][file] = (!isEmpty(target)) ? target + '/' + file : file;
-      } else {
-        // check duplicate in targets
-        if (!isEmpty(files[file])) {
-          console.log('[rinclude] '.yellow + 'duplicate file ' + file.green + ' between ' + [files[file], ', ', target, '/', file].join('').green);
-          console.log('[rinclude] '.yellow + 'at ' + path.green);
-          throw new Error('duplicate file [' + file + '], between ' + files[file] + ', ' + target + '/' + file);
-        }
-        files[file] = (!isEmpty(target)) ? target + '/' + file : file;
-      }
-    });
-  });
+  listupTargets(root, path, targets, files);
 
   // console.log('files', files);
   return files;
-
-  // // last = last( keys(files) );
-  // content = [];
-  // content.push('module.exports = {');
-  // print(3, files);
-  // content.push('};')
-  // content = content.join('\n');
-
-  // fs.writeFileSync(nodePath.resolve(path, 'index.js'), content);
-
-  // function print(offset, obj) {
-  //   var lastItem = last(Object.keys(obj)); // last item of obj
-
-  //   forEach(obj, function (file, key) {
-  //     var name, str;
-  //     name = nodePath.basename(key, '.js');
-
-  //     if (!isString(file)) {
-  //       content.push(Array(offset).join(' ') + name + ' : {');
-  //       print(offset + 2, file);
-  //       str = Array(offset).join(' ') + '}';
-  //     } else {
-  //       str = Array(offset).join(' ') + name + ' : require(\'./' + file + '\')'
-
-  //     }
-  //     str = (lastItem !== key) ? str + ', ' : str;
-  //     content.push(str);
-  //   });
-  // }
 }

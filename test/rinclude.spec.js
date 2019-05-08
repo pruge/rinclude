@@ -10,9 +10,19 @@ describe('rinclude load custom folder files', () => {
 
   it('should have timer', () => {
     const timer = include('timer');
-    console.log('timer', timer);
-    should.exist({});
-    // should.exist(timer);
+    should.exist(timer);
+  });
+
+  it('should have stopwatch', () => {
+    const stopwatch = include('stopwatch');
+    should.exist(stopwatch);
+  });
+
+  it('should have something', () => {
+    function test() {
+      const something = include('something');
+    }
+    (test).should.throw();
   });
 
   it('should return message', () => {
@@ -31,9 +41,10 @@ describe('rincldue load custom2 folder files', () => {
   it('should lcd.display()', () => {
     include.path('./custom2', 'two');
     const timer = include('two.timer');
-    timer.start().should.equal('custom2.timer.start');
-    timer.stop().should.equal('custom2.timer.stop');
+    timer.start().should.equal('custom2.timer.api.start');
+    timer.stop().should.equal('custom2.timer.api.stop');
     timer.lcd.display().should.equal('custom2.timer.lcd.display');
+    timer.lcd.check.checking().should.equal('custom2.timer.lcd.check.checking');
   })
 
 });

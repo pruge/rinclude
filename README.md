@@ -214,6 +214,7 @@ module.exports = {
  │           │    └── stop.js
  │           ├── lcd
  │           │    └── display.js
+ │           ├── info.js
  │           └── .generateIndex
  └── app.js
 ```
@@ -228,6 +229,7 @@ api, lcd
 module.exports = {
   start : require('./api/start.js'),
   stop : require('./api/stop.js'),
+  info : require('./info.js'),
   display: require('./lcd/display.js)
 };
 ```
@@ -243,6 +245,7 @@ api, lcd:lcd
 module.exports = {
   start : require('./api/start.js'),
   stop : require('./api/stop.js'),
+  info : require('./info.js'),
   lcd: {
     display: require('./lcd/display.js)
   }
@@ -262,6 +265,7 @@ module.exports = {
     start : require('./api/start.js'),
     stop : require('./api/stop.js')
   },
+  info : require('./info.js'),
   display : require('./lcd/display.js')
 };
 ```
@@ -278,6 +282,7 @@ module.exports = {
  │           │    └── display.js
  │           ├── something
  │           │    └── notNeeded.js
+ │           ├── info.js
  │           └── .generateIndex
  └── app.js
 ```
@@ -292,7 +297,45 @@ api, lcd:lcd
 module.exports = {
   start : require('./api/start.js'),
   stop : require('./api/stop.js'),
+  info : require('./info.js'),
   lcd: {
+    display: require('./lcd/display.js)
+  }
+};
+```
+
+4. It supports several subfolders.
+```
+ .
+ ├── custom
+ │     └── timer
+ │           ├── api
+ │           │    ├── start.js
+ │           │    └── stop.js
+ │           ├── lcd
+ │           │    ├── check
+ │           │    │    └── checking.js
+ │           │    └── display.js
+ │           ├── info.js
+ │           └── .generateIndex
+ └── app.js
+```
+
+- Contents of .gnerateIndex
+```
+api, lcd:lcd
+```
+
+- Generated virtual index.js
+```
+module.exports = {
+  start : require('./api/start.js'),
+  stop : require('./api/stop.js'),
+  info : require('./info.js'),
+  lcd: {
+    check: {
+      checking: require('./lcd/check/checking.js')
+    },
     display: require('./lcd/display.js)
   }
 };

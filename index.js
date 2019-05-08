@@ -79,7 +79,7 @@ include.checkDuplicate = function checkDuplicate(prevLibs, newLibs, base, prefix
     const key = (prefix !== undefined) ? prefix + '.' + lib : lib;
     if (includes(prevLibs, key)) {
       console.log('[rinclude] '.yellow + key.green + ' module is duplicated. check it.');
-      console.log('[rinclude] '.yellow + 'in directory ' + folders.join(', ').green);
+      console.log('[rinclude] '.yellow + 'in path [ ' + folders.join(', ').green + ' ]');
       console.log('[rinclude] '.yellow + 'rename or use prefix.');
       throw new Error('[' + key + '] module is duplicated. check it.');
     }
@@ -100,9 +100,10 @@ include.generate = function generate(newLibs, base, prefix) {
     if (getProperty(itemPath)) {
       // .generateIndex가 있는가?
       const targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
-      const files = generateIndexJs(itemPath, targets);
+      const files = generateIndexJs(base, itemPath, targets);
       // console.log('files', files);
-      load(files, loadedPath, key, itemPath);
+      // load(files, loadedPath, key, itemPath);
+      loadedPath[key] = files;
     } else if (getProperty(itemPath, 'index.js')) {
       // index.js가 있는가?
       loadedPath[key] = itemPath;
@@ -112,25 +113,6 @@ include.generate = function generate(newLibs, base, prefix) {
     // console.log('chekc', check);
   });
 };
-
-function load(files, loaded, app, itemPath) {
-  forEach(files, (file, key) => {
-    const name = nodePath.basename(key, '.js');
-    // console.log('name', name);
-
-    if (!isString(file)) {
-      // console.log('!isString, file', file);
-      load(file, loaded[app], name, itemPath);
-    } else {
-      // console.log('file', file, nodePath.join(itemPath, file));
-      // console.log('set', loaded, app, name);
-      loaded[app] = loaded[app] || {};
-      loaded[app][name] = nodePath.join(itemPath, file);
-      // console.log('loaded', loaded)
-    }
-
-  })
-}
 
 function loadRequire(loadedPath, lib) {
   let loading = {};
@@ -147,8 +129,14 @@ function loadRequire(loadedPath, lib) {
     }
   }
 
-  traverse(loadedPath[lib], loading);
-  // console.log(loading)
+  // console.log('loaded', loadedPath[lib])
+
+  if (isString(loadedPath[lib])) {
+    loaded[lib] = require(loadedPath[lib]);
+  } else {
+    traverse(loadedPath[lib], loading);
+  }
+  // console.log('loading', loading)
   loaded[lib] = loading;
   return loading;
 }

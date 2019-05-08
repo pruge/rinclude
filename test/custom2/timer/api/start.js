@@ -1,3 +1,3 @@
 module.exports = function () {
-  return 'custom2.timer.start';
+  return 'custom2.timer.api.start';
 };
