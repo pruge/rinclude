@@ -8,9 +8,10 @@ const nodePath = require('path'),
   // dot = require('dot-object'),
   isString = require('lodash.isstring'),
   forEach = require('lodash.foreach'),
+  util = require('util'),
 
   generateIndexJs = require('./api/generateIndexJs'),
-  getProperty = require('./api/getProperty'),
+  isFileExist = require('./api/isFileExist'),
   getList = require('./api/getList');
 
 let scanResult = {},     // lib list : absolute path
@@ -18,11 +19,16 @@ let scanResult = {},     // lib list : absolute path
   folders = [],     // scanned folder
   loadedPath = {},    // loaded lib with absolute path
   loaded = {},    // loaded lib
+  options = {
+    createIndex: false,
+    type: 'es5'
+  },
   root;
 
 
 function include(lib) {
   const path = scanResult[lib];
+
 
   if (isUndefined(path)) {
     // absolute directory of caller
@@ -36,9 +42,6 @@ function include(lib) {
   }
 
   return loaded[lib] ? loaded[lib] : loadRequire(loadedPath, lib);
-}
-
-function getCallerDirectory() {
 }
 
 include.path = function path(folder, prefix) {
@@ -57,6 +60,15 @@ include.path = function path(folder, prefix) {
   return this;
 };
 
+include.clean = function () {
+  scanResult = {};     // lib list : absolute path
+  libs = [];     // keys of scanResult
+  folders = [];     // scanned folder
+  loadedPath = {};    // loaded lib with absolute path
+  loaded = {};    // loaded lib
+  root = '';
+}
+
 include.scan = function scan(root, folder, prefix) {
   // console.log('loaded', loaded);
 
@@ -71,7 +83,9 @@ include.scan = function scan(root, folder, prefix) {
 
   // getList(base, true);
   // console.log('scanResult', scanResult);
-  // console.log('loaded', loaded);
+  // console.log('loadedPath', loadedPath);
+  // console.log(options);
+  // console.log(util.inspect(loadedPath, false, null, true /* enable colors */))
 };
 
 include.checkDuplicate = function checkDuplicate(prevLibs, newLibs, base, prefix) {
@@ -94,17 +108,20 @@ include.generate = function generate(newLibs, base, prefix) {
     const key = (prefix !== undefined) ? prefix + '.' + name : name;
     const itemPath = scanResult[key] = nodePath.resolve(base, lib);
 
-    // console.log(itemPath);
+    // console.log('itemPath', itemPath);
     loadedPath[key] = {};
-    const check = getProperty(itemPath, 'index.js');
-    if (getProperty(itemPath)) {
+    // const check = isFileExist(itemPath, 'index.js');
+    const isExist = isFileExist(itemPath, '.generateIndex');
+    // console.log('isExist', isExist, isExist && isExist.isDirectory());
+    // if (isExist && isExist.isDirectory()) {
+    if (isExist) {
       // .generateIndex가 있는가?
-      const targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
-      const files = generateIndexJs(base, itemPath, targets);
+      const targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',').filter(t => t !== '\n');
+      const files = generateIndexJs(base, itemPath, targets, options);
       // console.log('files', files);
       // load(files, loadedPath, key, itemPath);
       loadedPath[key] = files;
-    } else if (getProperty(itemPath, 'index.js')) {
+    } else if (isFileExist(itemPath, 'index.js')) {
       // index.js가 있는가?
       loadedPath[key] = itemPath;
     } else {
@@ -139,6 +156,14 @@ function loadRequire(loadedPath, lib) {
   // console.log('loading', loading)
   loaded[lib] = loading;
   return loading;
+}
+
+/**
+ * options
+ * es5 ? es6
+ */
+include.options = function (opts) {
+  options = Object.assign(options, opts || {});
 }
 
 module.exports = include

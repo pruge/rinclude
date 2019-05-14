@@ -3,7 +3,7 @@ const fs = require('fs-extended'),
   includes = require('lodash.includes'),
 
   generateIndexJs = require('./generateIndexJs'),
-  getProperty = require('./getProperty');
+  isFileExist = require('./isFileExist');
 
 let base;
 
@@ -15,7 +15,7 @@ function filter(itemPath, stat) {
 
   // if directory, check .generateIndex, then generate
   if (stat.isDirectory()) {
-    if (getProperty(itemPath)) {
+    if (isFileExist(itemPath)) {
       const targets = fs.readFileSync(itemPath + '/.generateIndex').toString().split(',');
       generateIndexJs(itemPath, targets);
     } else {

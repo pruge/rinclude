@@ -4,11 +4,18 @@ const fs = require('fs'),
 
 module.exports = function getProperty(path, file = '.generateIndex') {
   let stat = undefined;
+  let dest;
   try {
-    stat = fs.lstatSync(nodePath.resolve(path, file));
+    if (/\.js/.test(path)) {
+      dest = path;
+    } else {
+      dest = nodePath.resolve(path, file);
+    }
+    stat = fs.lstatSync(dest);
   } catch (e) {
-
+    // return undefined;
   } finally {
-    return !isUndefined(stat);
+    // return !isUndefined(stat);
+    return stat;
   }
 };
